@@ -15,7 +15,7 @@ langgraph==0.0.38
 
 # Embeddings & Vector DB
 sentence-transformers==2.4.0
-faiss-cpu==1.7.4
+faiss-cpu
 
 # Document Parsing
 pymupdf==1.23.26
