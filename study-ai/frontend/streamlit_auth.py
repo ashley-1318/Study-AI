@@ -20,7 +20,7 @@ def _clear_session():
     for key in ("access_token", "refresh_token", "user", "auth_time"):
         st.session_state.pop(key, None)
 
-
+ 
 def _token_needs_refresh() -> bool:
     if "auth_time" not in st.session_state:
         return False

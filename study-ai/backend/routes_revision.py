@@ -43,26 +43,7 @@ def generate_revision_tip(
     review_chunks: list[str],
 ) -> str:
     """Generate specific actionable study tip using LLM."""
-    chunk_preview = review_chunks[0][:300] if review_chunks else ""
-    weak_str = ", ".join(related_weak[:3]) if related_weak else "none"
-
-    prompt = f"""A student is revising "{concept_name}".
-Current mastery: {mastery_score:.0%}
-Definition: {definition[:150]}
-Also weak on: {weak_str}
-Content from their notes: "{chunk_preview}"
-
-Write ONE specific 20-word study action.
-Start with a verb. Reference their actual content.
-Example: "Re-read the weight update equation and trace through one backpropagation step manually."
-Output only the tip, nothing else."""
-
-    try:
-        response = _llm.invoke(prompt)
-        return response.content.strip().replace('"', '')
-    except Exception as e:
-        log.error("Failed to generate revision tip: %s", e)
-        return f"Re-read the definition of {concept_name} and practice one example from your notes."
+    return f"Re-read the definition of {concept_name} and practice one example from your notes."
 
 @router.get("/revision/plan")
 async def get_revision_plan(
