@@ -1,0 +1,4 @@
+study-ai/backend/uploads/
+study-ai/backend/faiss_indexes/
+study-ai/backend/studyai.db
+.git/
