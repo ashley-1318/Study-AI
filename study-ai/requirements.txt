@@ -18,7 +18,7 @@ sentence-transformers==2.4.0
 faiss-cpu
 
 # Document Parsing
-pymupdf==1.23.26
+pymupdf
 python-docx==1.1.0
 
 # Frontend
