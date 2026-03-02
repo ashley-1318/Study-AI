@@ -50,7 +50,7 @@ async def generate_quiz(
             Concept.user_id     == current_user.id,
         ).order_by(Concept.mastery_score.asc()).limit(body.question_count // 2 + 2).all()
     else:
-        concepts = get_weak_concepts(db, current_user.id)[:body.question_count // 2 + 2]
+        concepts = get_weak_concepts(db, str(current_user.id))[:body.question_count // 2 + 2]
 
     if not concepts:
         raise HTTPException(400, "No concepts available to generate a quiz")
@@ -60,8 +60,8 @@ async def generate_quiz(
 
     for concept in concepts:
         qs = await generate_questions(
-            concept_name = concept.name,
-            concept_def  = concept.definition or "",
+            concept_name = str(concept.name),
+            concept_def  = str(concept.definition) if concept.definition is not None else "",
             difficulty   = body.difficulty,
             count        = per_concept,
         )
@@ -109,12 +109,17 @@ async def submit_quiz(
         raise HTTPException(404, "Quiz not found")
 
     questions = quiz.questions or []
+    if isinstance(questions, list):
+        questions_list = questions
+    else:
+        questions_list = []  # Fallback if Column type
+    
     answers_map = {a.question_index: a.answer for a in body.answers}
 
     correct_count = 0
     breakdown = []
 
-    for i, q in enumerate(questions):
+    for i, q in enumerate(questions_list):
         user_ans  = answers_map.get(i, "").strip().lower()
         correct_ans = str(q.get("answer", "")).strip().lower()
         q_type    = q.get("type", "mcq")
@@ -161,18 +166,18 @@ async def submit_quiz(
             "concept":     q.get("concept", ""),
         })
 
-    score = round((correct_count / max(len(questions), 1)) * 100, 1)
+    score = round((correct_count / max(len(questions_list), 1)) * 100, 1)
 
     # Update quiz record
-    quiz.score    = score
-    quiz.taken_at = datetime.utcnow()
+    quiz.score    = score  # type: ignore
+    quiz.taken_at = datetime.utcnow()  # type: ignore
     db.commit()
 
     # Log learning event
     event = LearningEvent(
         user_id    = current_user.id,
         event_type = "quiz",
-        result     = {"quiz_id": quiz_id, "score": score, "correct": correct_count, "total": len(questions)},
+        result     = {"quiz_id": quiz_id, "score": score, "correct": correct_count, "total": len(questions_list)},
         timestamp  = datetime.utcnow(),
     )
     db.add(event)
@@ -183,7 +188,7 @@ async def submit_quiz(
         "data": {
             "score":     score,
             "correct":   correct_count,
-            "total":     len(questions),
+            "total":     len(questions_list),
             "breakdown": breakdown,
         },
         "error": None,
@@ -196,21 +201,26 @@ async def quiz_history(
     db: Session = Depends(get_db),
 ):
     """Return last 20 quizzes for the current user."""
-    quizzes = get_quiz_history(db, current_user.id)
+    quizzes = get_quiz_history(db, str(current_user.id))
     result = []
     for q in quizzes:
         mat_name = None
-        if q.material_id:
+        if q.material_id is not None:
             mat = db.query(StudyMaterial).filter(StudyMaterial.id == q.material_id).first()
             mat_name = mat.filename if mat else None
+        
+        # Extract questions to a list for length calculation
+        q_questions = q.questions or []
+        q_count = len(q_questions) if isinstance(q_questions, list) else 0
+        
         result.append({
             "id":            q.id,
             "difficulty":    q.difficulty,
             "score":         q.score,
-            "taken_at":      q.taken_at.isoformat() if q.taken_at else None,
-            "created_at":    q.created_at.isoformat() if q.created_at else None,
+            "taken_at":      q.taken_at.isoformat() if q.taken_at is not None else None,
+            "created_at":    q.created_at.isoformat() if q.created_at is not None else None,
             "material_name": mat_name,
-            "question_count": len(q.questions or []),
+            "question_count": q_count,
         })
 
     return {"success": True, "data": result, "error": None}

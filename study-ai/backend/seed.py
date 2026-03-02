@@ -82,18 +82,20 @@ def seed():
         ]
         concept_objs = []
         for cd in concepts_data:
+            mat = cd["mat"]  # type: ignore
+            mastery = float(cd["mastery"])  # type: ignore
             c = Concept(
                 id               = str(uuid.uuid4()),
-                material_id      = cd["mat"].id,
+                material_id      = mat.id,  # type: ignore
                 user_id          = user.id,
                 name             = cd["name"],
                 definition       = f"Core concept: {cd['name']} in machine learning and deep learning.",
-                mastery_score    = cd["mastery"],
+                mastery_score    = mastery,
                 related_concepts = cd["related"],
                 easiness_factor  = 2.5,
-                repetition_count = 1 if cd["mastery"] > 0.5 else 0,
-                interval_days    = 6 if cd["mastery"] > 0.5 else 1,
-                next_review      = datetime.utcnow() + timedelta(days=1 if cd["mastery"] < 0.5 else 7),
+                repetition_count = 1 if mastery > 0.5 else 0,
+                interval_days    = 6 if mastery > 0.5 else 1,
+                next_review      = datetime.utcnow() + timedelta(days=1 if mastery < 0.5 else 7),
                 created_at       = datetime.utcnow() - timedelta(days=3),
             )
             db.add(c)

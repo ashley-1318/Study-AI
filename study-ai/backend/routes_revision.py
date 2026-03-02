@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 _llm = ChatGroq(
     model="llama-3.1-8b-instant",
     temperature=0.3,
-    groq_api_key=os.getenv("GROQ_API_KEY", ""),
+    api_key=os.getenv("GROQ_API_KEY", ""),  # type: ignore
 )
 
 def generate_revision_tip(
@@ -52,8 +52,8 @@ async def get_revision_plan(
 ):
     """Return the user's revision plan and today's due concepts."""
     plan = db.query(RevisionPlan).filter(RevisionPlan.user_id == current_user.id).first()
-    due_today = get_concepts_due_today(db, current_user.id)
-    all_weak  = get_weak_concepts(db, current_user.id)
+    due_today = get_concepts_due_today(db, str(current_user.id))
+    all_weak  = get_weak_concepts(db, str(current_user.id))
     
     schedule = plan.schedule if plan else {}
     weak_names = [c.name for c in all_weak[:5]]
@@ -66,10 +66,10 @@ async def get_revision_plan(
         tip = None
         if is_due:
             tip = generate_revision_tip(
-                concept_name=c.name,
-                definition=c.definition or "",
-                mastery_score=c.mastery_score,
-                related_weak=[w for w in weak_names if w != c.name],
+                concept_name=str(c.name),
+                definition=str(c.definition) if c.definition is not None else "",
+                mastery_score=float(c.mastery_score),
+                related_weak=[str(w) for w in weak_names if str(w) != str(c.name)],
                 review_chunks=chunks
             )
 
@@ -111,7 +111,7 @@ async def generate_revision_plan(
     
     schedule = await generate_adaptive_plan(
         db, 
-        current_user.id, 
+        str(current_user.id), 
         strategy=body.strategy,
         focus_material_ids=body.focus_material_ids,
         days_available=body.days_available
@@ -143,7 +143,7 @@ async def mark_complete(
         raise HTTPException(404, str(e))
 
     # Verify ownership
-    if concept.user_id != current_user.id:
+    if str(concept.user_id) != str(current_user.id):
         raise HTTPException(403, "Not your concept")
 
     # Log revision event

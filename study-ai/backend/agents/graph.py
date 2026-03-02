@@ -115,29 +115,29 @@ async def _push(state: PipelineState, step: str, status: str, message: str):
 workflow = StateGraph(PipelineState)
 
 # Add Nodes
-workflow.add_node("parse",     parse_node)
-workflow.add_node("extract",   extract_node)
-workflow.add_node("embed",     embed_node)
-workflow.add_node("index",     index_node)
-workflow.add_node("retrieve",  retrieve_node)
-workflow.add_node("connections", connection_node)
-workflow.add_node("summarize", summarize_node)
-workflow.add_node("quiz",      quiz_node)
-workflow.add_node("revision",  revision_node)
-workflow.add_node("analytics", analytics_node)
+workflow.add_node("parse",         parse_node)
+workflow.add_node("extract",       extract_node)
+workflow.add_node("embed",         embed_node)
+workflow.add_node("index",         index_node)
+workflow.add_node("retrieve",      retrieve_node)
+workflow.add_node("connect",       connection_node)
+workflow.add_node("summarize",     summarize_node)
+workflow.add_node("quiz",          quiz_node)
+workflow.add_node("plan_revision", revision_node)
+workflow.add_node("analyze",       analytics_node)
 
 # Add Edges (Linear Flow)
 workflow.set_entry_point("parse")
-workflow.add_edge("parse",     "extract")
-workflow.add_edge("extract",   "embed")
-workflow.add_edge("embed",     "index")
-workflow.add_edge("index",     "retrieve")
-workflow.add_edge("retrieve",  "connections")
-workflow.add_edge("connections", "summarize")
-workflow.add_edge("summarize", "quiz")
-workflow.add_edge("quiz",      "revision")
-workflow.add_edge("revision",  "analytics")
-workflow.add_edge("analytics", END)
+workflow.add_edge("parse",         "extract")
+workflow.add_edge("extract",       "embed")
+workflow.add_edge("embed",         "index")
+workflow.add_edge("index",         "retrieve")
+workflow.add_edge("retrieve",      "connect")
+workflow.add_edge("connect",       "summarize")
+workflow.add_edge("summarize",     "quiz")
+workflow.add_edge("quiz",          "plan_revision")
+workflow.add_edge("plan_revision", "analyze")
+workflow.add_edge("analyze",       END)
 
 # Compile
 app = workflow.compile()
@@ -150,7 +150,7 @@ async def run_pipeline(state: PipelineState) -> PipelineState:
     try:
         final_state = await app.ainvoke(state)
         # Final state is a dict that matches PipelineState
-        return dict(final_state)
+        return final_state  # type: ignore
     except Exception as exc:
         import traceback
         tb = traceback.format_exc()

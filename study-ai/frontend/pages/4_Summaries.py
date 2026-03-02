@@ -29,13 +29,14 @@ with st.sidebar:
         <span style='font-family:Syne,sans-serif;font-weight:900;font-size:24px'>
             <span style='color:#1fb89a'>Study</span><span style='color:#e8a020'>AI</span>
         </span></div>""", unsafe_allow_html=True)
-    st.page_link("app.py",              label="🏠 Home")
-    st.page_link("pages/1_Dashboard.py", label="📊 Dashboard")
-    st.page_link("pages/2_Upload.py",    label="📤 Upload Material")
-    st.page_link("pages/3_Quiz.py",      label="❓ Adaptive Quiz")
-    st.page_link("pages/4_Summaries.py", label="📝 Summaries")
-    st.page_link("pages/5_Revision.py",  label="🔄 Revision Planner")
-    st.page_link("pages/6_Analytics.py", label="📈 Analytics")
+    st.page_link("app.py",                label="🏠 Home")
+    st.page_link("pages/1_Dashboard.py",  label="📊 Dashboard")
+    st.page_link("pages/2_Upload.py",     label="📤 Upload Material")
+    st.page_link("pages/3_Quiz.py",       label="❓ Adaptive Quiz")
+    st.page_link("pages/4_Summaries.py",  label="📝 Summaries")
+    st.page_link("pages/5_Revision.py",   label="🔄 Revision Planner")
+    st.page_link("pages/6_Analytics.py",  label="📈 Analytics")
+    st.page_link("pages/7_Ask_AI.py",     label="💬 Ask AI")
     show_user_sidebar()
 
 # ── Back button
@@ -56,7 +57,7 @@ if not done_mats:
             <p style='color:#7a7f9a;font-size:18px'>No processed materials yet.<br>Upload a file to see summaries here.</p>
         </div>""", unsafe_allow_html=True)
     if st.button("📤 Go to Upload", key="goto_upload_4"):
-        st.switch_page("pages/2_upload.py")
+        st.switch_page("pages/2_Upload.py")
 else:
     col_left, col_right = st.columns([3, 7], gap="large")
 

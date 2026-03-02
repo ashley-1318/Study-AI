@@ -1,4 +1,9 @@
 """StudyAI — FAISS semantic retriever agent node."""
+import asyncio
+import os
+
+from groq import RateLimitError
+from langchain_groq import ChatGroq
 
 
 async def retrieve_node(state: dict) -> dict:
@@ -18,13 +23,12 @@ async def retrieve_node(state: dict) -> dict:
     await _push(state, "retrieve", "running", "Searching related knowledge…")
     from tools.faiss_store import FAISSStore
     from database import StudyMaterial
-    import os
-    from langchain_groq import ChatGroq
 
     _llm = ChatGroq(
         model="llama-3.1-8b-instant",
         temperature=0.1,
-        groq_api_key=os.getenv("GROQ_API_KEY", ""),
+        api_key=os.getenv("GROQ_API_KEY", ""),  # type: ignore
+        stop_sequences=[],
     )
 
     db = state.get("db")
@@ -45,11 +49,30 @@ async def retrieve_node(state: dict) -> dict:
                 seen_ids.add(vid)
                 chunk = r.get("chunk_text", "")
                 fname = r.get("filename", "Existing Doc")
-                try:
-                    p = f"Why does this chunk from '{fname}': '{chunk[:200]}' relate to my current study on: '{ctx}'? 20 words max."
-                    r["reason"] = _llm.invoke(p).content.strip().replace('"', '')
-                except Exception:
-                    r["reason"] = "Related conceptual context found."
+                
+                # Retry logic for rate limit errors
+                max_retries = 5
+                for attempt in range(max_retries):
+                    try:
+                        p = f"Why does this chunk from '{fname}': '{chunk[:200]}' relate to my current study on: '{ctx}'? 20 words max."
+                        response = _llm.invoke(p)
+                        # Handle response content which can be a list or dict
+                        if isinstance(response.content, list):
+                            r["reason"] = str(response.content[0]).strip().replace('"', '') if response.content else "Related conceptual context found."
+                        else:
+                            r["reason"] = str(response.content).strip().replace('"', '')
+                        break  # Success
+                    except RateLimitError as e:
+                        if attempt == max_retries - 1:
+                            r["reason"] = "Related conceptual context found."
+                            break
+                        wait_time = 2 ** attempt
+                        await asyncio.sleep(wait_time)
+                        continue
+                    except Exception:
+                        r["reason"] = "Related conceptual context found."
+                        break
+                
                 related.append(r)
 
     state["related"] = related[:10]

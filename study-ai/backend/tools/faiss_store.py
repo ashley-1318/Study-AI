@@ -60,7 +60,8 @@ class FAISSStore:
             self.load()
 
         arr = np.array(embeddings, dtype="float32")
-        self.index.add(arr)
+        if self.index is not None:
+            self.index.add(arr)  # type: ignore
 
         ids = []
         for meta in meta_list:
@@ -85,13 +86,16 @@ class FAISSStore:
         """
         if self.index is None:
             self.load()
+        
+        assert self.index is not None, "Index should be loaded"
+        
         if self.index.ntotal == 0:
             return []
 
         query = np.array([query_embedding], dtype="float32")
         # Retrieve extra results so we can filter without running short
         k = min(top_k + 20, self.index.ntotal)
-        distances, indices = self.index.search(query, k)
+        distances, indices = self.index.search(query, k)  # type: ignore
 
         results = []
         for dist, idx in zip(distances[0], indices[0]):
@@ -130,7 +134,7 @@ class FAISSStore:
             vecs = [m["embedding"] for m in keep_meta if "embedding" in m]
             if vecs:
                 arr = np.array(vecs, dtype="float32")
-                new_index.add(arr)
+                new_index.add(arr)  # type: ignore
 
         self.index    = new_index
         self.metadata = keep_meta

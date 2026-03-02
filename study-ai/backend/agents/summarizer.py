@@ -1,16 +1,22 @@
 """StudyAI — Summarizer agent node using Groq LLM."""
+import asyncio
 import os
 
 from dotenv import load_dotenv
+from groq import RateLimitError
 from langchain_groq import ChatGroq
 
 load_dotenv()
 
-_llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    temperature=0.5,
-    groq_api_key=os.getenv("GROQ_API_KEY", ""),
-)
+
+def _get_llm():
+    """Lazy initialize LLM to avoid errors if API key is missing."""
+    return ChatGroq(
+        model="llama-3.3-70b-versatile",
+        temperature=0.5,
+        api_key=os.getenv("GROQ_API_KEY", ""),  # type: ignore
+        stop_sequences=[],
+    )
 
 
 async def summarize_node(state: dict) -> dict:
@@ -34,7 +40,7 @@ async def summarize_node(state: dict) -> dict:
     # Build context from first 5 chunks + concept names
     context_chunks = "\n\n---\n\n".join(chunks[:5])
     concept_names  = ", ".join(c["name"] for c in concepts[:20])
-
+    _llm = _get_llm()
     prompt = f"""You are an expert tutor for StudyAI. Create a comprehensive, well-structured summary.
 
 Document: {filename}
@@ -52,9 +58,36 @@ Write a hierarchical Markdown summary suitable for exam revision:
 - Add a "Key Concepts" section at the end
 - Be concise but complete (400-600 words)"""
 
+    # Retry logic for rate limit errors
+    max_retries = 5
+    response = None  # Initialize to avoid unbound variable
+    for attempt in range(max_retries):
+        try:
+            response = await _llm.ainvoke(prompt)
+            break  # Success
+        except RateLimitError as e:
+            if attempt == max_retries - 1:
+                summary = f"## Summary of {filename}\n\nRate limit exceeded after {max_retries} retries.\n\n**Concepts:** {concept_names}"
+                state["summary"] = summary
+                await _push(state, "summarize", "done", "Summary generation rate limited")
+                return state
+            wait_time = 2 ** attempt
+            await _push(state, "summarize", "running", f"Rate limited, retrying in {wait_time}s...")
+            await asyncio.sleep(wait_time)
+            continue
+    
+    if response is None:
+        summary = f"## Summary of {filename}\n\nSummary generation failed.\n\n**Concepts:** {concept_names}"
+        state["summary"] = summary
+        await _push(state, "summarize", "done", "Summary generation failed")
+        return state
+    
     try:
-        response = await _llm.ainvoke(prompt)
-        summary  = response.content.strip()
+        # Handle response content which can be a list or dict
+        if isinstance(response.content, list):
+            summary = str(response.content[0]) if response.content else ""
+        else:
+            summary = str(response.content).strip()
     except Exception as exc:
         summary = f"## Summary of {filename}\n\nSummary generation failed: {exc}\n\n**Concepts:** {concept_names}"
 

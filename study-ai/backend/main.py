@@ -23,14 +23,14 @@ app.add_middleware(
 )
 
 # Import and mount routers
-from routes_auth      import router as auth_router
+from routes_auth import router as auth_router
+from routes_qna import router as qna_router
 from routes_materials import router as materials_router, progress_queues
-from routes_quiz      import router as quiz_router
-from routes_concepts  import router as concepts_router
-from routes_revision  import router as revision_router
+from routes_quiz import router as quiz_router
+from routes_concepts import router as concepts_router
+from routes_revision import router as revision_router
 from routes_analytics import router as analytics_router
-from routes_history   import router as history_router
-from routes_qna       import router as qna_router
+from routes_history import router as history_router
 
 app.include_router(auth_router)                           # /auth/*
 app.include_router(materials_router, prefix="/api/v1")   # /api/v1/materials/*
@@ -56,7 +56,7 @@ async def ws_pipeline(
     Messages: {"step": str, "status": str, "message": str}
     Closes when analytics step is done or error occurs.
     """
-    from auth import decode_token
+    from .auth import decode_token
     try:
         decode_token(token)  # validate JWT; raises 401 on failure
     except Exception:
@@ -126,3 +126,13 @@ async def health():
         "db":      "sqlite",
         "llm":     "groq/llama-3.3-70b-versatile",
     }
+
+# ─── Main API ───────────────────────────────────────────────────────────────
+
+@app.get("/")
+def root():
+    return {"message": "Welcome to StudyAI API!"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

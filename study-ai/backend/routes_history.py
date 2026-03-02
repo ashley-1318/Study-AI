@@ -42,19 +42,20 @@ async def get_study_history(
         }
         
         # Add friendly descriptions
-        if ev.event_type == "upload":
-            filename = ev.result.get("filename", "document")
+        event_type = str(ev.event_type)  # Convert to string for comparison
+        if event_type == "upload":
+            filename = ev.result.get("filename", "document") if ev.result is not None else "document"
             event_data["description"] = f"Uploaded '{filename}'"
-        elif ev.event_type == "quiz":
-            score = ev.result.get("score", 0)
+        elif event_type == "quiz":
+            score = ev.result.get("score", 0) if ev.result is not None else 0
             event_data["description"] = f"Completed quiz with {score}% score"
-        elif ev.event_type == "revision":
+        elif event_type == "revision":
             # Attempt to get concept name if possible (would need a join or stored in result)
             # For now, use the result's quality
-            quality = ev.result.get("quality", 0)
+            quality = ev.result.get("quality", 0) if ev.result is not None else 0
             event_data["description"] = f"Reviewed concept (Quality: {quality}/5)"
         else:
-            event_data["description"] = f"Learned something new ({ev.event_type})"
+            event_data["description"] = f"Learned something new ({event_type})"
 
         timeline[date_str].append(event_data)
 

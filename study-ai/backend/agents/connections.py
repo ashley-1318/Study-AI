@@ -8,11 +8,15 @@ from langchain_groq import ChatGroq
 load_dotenv()
 log = logging.getLogger(__name__)
 
-_llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    temperature=0.3,
-    groq_api_key=os.getenv("GROQ_API_KEY", ""),
-)
+
+def _get_llm():
+    """Lazy initialize LLM to avoid errors if API key is missing."""
+    return ChatGroq(
+        model="llama-3.3-70b-versatile",
+        temperature=0.3,
+        api_key=os.getenv("GROQ_API_KEY", ""),  # type: ignore
+        stop_sequences=[],
+    )
 
 async def connection_node(state: dict) -> dict:
     """

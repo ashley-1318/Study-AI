@@ -31,11 +31,24 @@ ENV/
 # Databases
 *.sqlite3
 *.db
+*.db-shm
+*.db-wal
 faiss_index/
+faiss_indexes/
+uploads/
 
 # OS
 .DS_Store
 Thumbs.db
+
+# VSCode
+.history/
+
+# Python version
+.python-version
+
+# Lock files
+*.lock.txtcd
 
 # Streamlit
 .streamlit/

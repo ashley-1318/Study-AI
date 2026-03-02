@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 _llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0.3,
-    groq_api_key=os.getenv("GROQ_API_KEY", ""),
+    stop_sequences=[],
 )
 
 class QuestionRequest(BaseModel):
@@ -46,7 +46,7 @@ async def ask_ai(
         raise HTTPException(400, "Question cannot be empty")
 
     # 1. Retrieve context via FAISS
-    store = FAISSStore(current_user.id)
+    store = FAISSStore(str(current_user.id))
     try:
         store.load()
     except Exception:

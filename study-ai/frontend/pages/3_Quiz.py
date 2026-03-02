@@ -30,13 +30,14 @@ with st.sidebar:
         <span style='font-family:Syne,sans-serif;font-weight:900;font-size:24px'>
             <span style='color:#1fb89a'>Study</span><span style='color:#e8a020'>AI</span>
         </span></div>""", unsafe_allow_html=True)
-    st.page_link("app.py",              label="🏠 Home")
-    st.page_link("pages/1_dashboard.py", label="📊 Dashboard")
-    st.page_link("pages/2_upload.py",    label="📤 Upload Material")
-    st.page_link("pages/3_quiz.py",      label="❓ Adaptive Quiz")
-    st.page_link("pages/4_summaries.py", label="📝 Summaries")
-    st.page_link("pages/5_revision.py",  label="🔄 Revision Planner")
-    st.page_link("pages/6_analytics.py", label="📈 Analytics")
+    st.page_link("app.py",                label="🏠 Home")
+    st.page_link("pages/1_Dashboard.py",  label="📊 Dashboard")
+    st.page_link("pages/2_Upload.py",     label="📤 Upload Material")
+    st.page_link("pages/3_Quiz.py",       label="❓ Adaptive Quiz")
+    st.page_link("pages/4_Summaries.py",  label="📝 Summaries")
+    st.page_link("pages/5_Revision.py",   label="🔄 Revision Planner")
+    st.page_link("pages/6_Analytics.py",  label="📈 Analytics")
+    st.page_link("pages/7_Ask_AI.py",     label="💬 Ask AI")
     show_user_sidebar()
 
 # ── Back button
@@ -68,7 +69,7 @@ if "active_quiz" not in st.session_state:
             material_options[m["filename"]] = m["id"]
 
         selected_mat_name = st.selectbox("📚 Source Material", list(material_options.keys()), key="quiz_mat_selector")
-        selected_mat_id   = material_options[selected_mat_name]
+        selected_mat_id   = material_options.get(selected_mat_name) if selected_mat_name else None
 
         # Override if coming from upload page
         if st.session_state.get("quiz_material_id"):
@@ -182,7 +183,7 @@ else:
                 st.rerun()
         with col_b:
             if st.button("🔄 Create Revision Plan", use_container_width=True, key="to_revision"):
-                st.switch_page("pages/5_revision.py")
+                st.switch_page("pages/5_Revision.py")
 
     elif idx < total:
         # ── Question View ─────────────────────────────────────────────────

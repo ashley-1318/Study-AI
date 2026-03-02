@@ -117,9 +117,10 @@ def update_concept_mastery(db: Session, concept_id: str, quality: int) -> Concep
     if not concept:
         raise ValueError(f"Concept {concept_id} not found")
 
-    ef = concept.easiness_factor
-    reps = concept.repetition_count
-    interval = concept.interval_days
+    # Extract Python values from SQLAlchemy columns
+    ef = float(concept.easiness_factor)  # type: ignore
+    reps = int(concept.repetition_count)  # type: ignore
+    interval = int(concept.interval_days)  # type: ignore
 
     if quality < 3:
         # Failed recall: restart repetition count, reset to 1-day interval
@@ -149,12 +150,12 @@ def update_concept_mastery(db: Session, concept_id: str, quality: int) -> Concep
     ).all()
 
     for c in all_same_concepts:
-        c.easiness_factor  = ef
-        c.repetition_count = reps
-        c.interval_days    = interval
-        c.next_review      = datetime.utcnow() + timedelta(days=interval)
-        c.mastery_score    = mastery
-        c.updated_at       = datetime.utcnow()
+        c.easiness_factor  = ef  # type: ignore
+        c.repetition_count = reps  # type: ignore
+        c.interval_days    = interval  # type: ignore
+        c.next_review      = datetime.utcnow() + timedelta(days=interval)  # type: ignore
+        c.mastery_score    = mastery  # type: ignore
+        c.updated_at       = datetime.utcnow()  # type: ignore
 
     db.commit()
     db.refresh(concept)

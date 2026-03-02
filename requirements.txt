@@ -5,20 +5,21 @@ sqlalchemy==2.0.27
 httpx==0.26.0
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.9
-pydantic==2.6.1
+pydantic==2.10.6
 
-# LLM / Agents
-langchain==0.1.9
-langchain-groq==0.1.0
-langchain-community==0.0.24
-langgraph==0.0.38
+# LLM / Agents (final compatible set)
+langchain==0.2.3
+langchain-community==0.2.4
+langchain-groq==0.1.10
+langgraph==0.0.69
 
 # Embeddings & Vector DB
 sentence-transformers==2.4.0
-faiss-cpu
+faiss-cpu==1.9.0.post1
+numpy==1.26.4
 
 # Document Parsing
-pymupdf
+PyMuPDF==1.25.4
 python-docx==1.1.0
 
 # Frontend

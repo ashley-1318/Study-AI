@@ -177,6 +177,7 @@ with st.sidebar:
     st.page_link("pages/4_Summaries.py",  label="📝 Summaries")
     st.page_link("pages/5_Revision.py",   label="🔄 Revision Planner")
     st.page_link("pages/6_Analytics.py",  label="📈 Analytics")
+    st.page_link("pages/7_Ask_AI.py",     label="💬 Ask AI")
     show_user_sidebar()
 
 # ── Hero ───────────────────────────────────────────────────────────────────────
@@ -221,13 +222,13 @@ st.markdown("### 🚀 What would you like to do?")
 st.markdown("<br>", unsafe_allow_html=True)
 
 feature_cards = [
-    ("📊 Dashboard",  "pages/1_Dashboard.py", "Overview of your learning progress and stats.", "#1fb89a", "📈"),
-    ("📤 Upload",     "pages/2_Upload.py",    "Add new PDFs or notes to your study library.", "#3b82f6", "📁"),
-    ("❓ Quiz",       "pages/3_Quiz.py",      "Test your knowledge with adaptive AI quizzes.", "#e8a020", "💡"),
-    ("💬 Ask AI",     "pages/7_Ask_AI.py",   "Chat with your documents and find answers.", "#8b5cf6", "💬"),
-    ("📝 Summaries",  "pages/4_Summaries.py", "Browse AI-generated summaries of your files.", "#ec4899", "📝"),
-    ("🔄 Revision",   "pages/5_Revision.py",  "Optimized spaced-repetition study plans.", "#f97316", "🔄"),
-    ("📈 Analytics",  "pages/6_Analytics.py", "Deep dives into your knowledge gaps and coverage.", "#1fb89a", "📊"),
+    ("📊 Dashboard",  "1_Dashboard.py", "Overview of your learning progress and stats.", "#1fb89a", "📈"),
+    ("📤 Upload",     "2_Upload.py",    "Add new PDFs or notes to your study library.", "#3b82f6", "📁"),
+    ("❓ Quiz",       "3_Quiz.py",      "Test your knowledge with adaptive AI quizzes.", "#e8a020", "💡"),
+    ("💬 Ask AI",     "7_Ask_AI.py",   "Chat with your documents and find answers.", "#8b5cf6", "💬"),
+    ("📝 Summaries",  "4_Summaries.py", "Browse AI-generated summaries of your files.", "#ec4899", "📝"),
+    ("🔄 Revision",   "5_Revision.py",  "Optimized spaced-repetition study plans.", "#f97316", "🔄"),
+    ("📈 Analytics",  "6_Analytics.py", "Deep dives into your knowledge gaps and coverage.", "#1fb89a", "📊"),
 ]
 
 # Grid Logic
@@ -242,14 +243,14 @@ for i in range(0, len(feature_cards), cols_per_row):
                 st.markdown(f"""
                 <div style='background:rgba(18,20,31,0.8);border:1px solid #1e2135;border-radius:20px;
                     padding:32px;margin-bottom:12px;border-top:3px solid {color};
-                    height: 250px; display: flex; flex-direction: column;
+                    height: 220px; display: flex; flex-direction: column;
                     transition:all 0.3s ease; box-sizing: border-box;'>
                     <div style='font-size:36px;margin-bottom:12px'>{icon}</div>
                     <h3 style='margin:0 0 8px;font-family:Syne,sans-serif;color:#e8e9f0;font-size:20px'>{title}</h3>
                     <p style='color:#7a7f9a;font-size:14px;line-height:1.6;flex-grow:1'>{desc}</p>
                 </div>""", unsafe_allow_html=True)
-                if st.button(f"Open {title.split()[-1]}", key=f"btn_{idx}", use_container_width=True):
-                    st.switch_page(path)
+                if st.button(f"Open {title.split()[1] if len(title.split()) > 1 else title}", key=f"btn_{idx}", use_container_width=True):
+                    st.switch_page(f"pages/{path}")
 
 # ── Recent Materials ──────────────────────────────────────────────────────────
 if materials:

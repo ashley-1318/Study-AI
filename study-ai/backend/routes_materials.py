@@ -40,7 +40,7 @@ async def upload_material(
         raise HTTPException(413, "File exceeds 20 MB limit")
 
     # Save to disk
-    user_upload_dir = os.path.join(UPLOAD_PATH, current_user.id)
+    user_upload_dir = os.path.join(UPLOAD_PATH, str(current_user.id))
     os.makedirs(user_upload_dir, exist_ok=True)
     safe_name = f"{uuid.uuid4()}_{file.filename}"
     file_path = os.path.join(user_upload_dir, safe_name)
@@ -69,15 +69,15 @@ async def upload_material(
 
     # Create progress queue for WebSocket streaming
     q: asyncio.Queue = asyncio.Queue()
-    progress_queues[material.id] = q
+    progress_queues[str(material.id)] = q
 
     # Background task: run full AI pipeline
     background_tasks.add_task(
         run_pipeline_task,
-        material_id  = material.id,
-        user_id      = current_user.id,
+        material_id  = str(material.id),
+        user_id      = str(current_user.id),
         file_path    = file_path,
-        filename     = file.filename,
+        filename     = file.filename or "unknown",
         queue        = q,
     )
 
@@ -107,14 +107,14 @@ async def run_pipeline_task(
     log.info("🚀 Pipeline starting for material_id=%s file=%s", material_id, filename)
     db = SessionLocal()
     try:
-        state = PipelineState(
-            file_path       = file_path,
-            filename        = filename,
-            user_id         = user_id,
-            material_id     = material_id,
-            db              = db,
-            progress_queue  = queue,
-        )
+        state: PipelineState = {  # type: ignore
+            "file_path":       file_path,
+            "filename":        filename,
+            "user_id":         user_id,
+            "material_id":     material_id,
+            "db":              db,
+            "progress_queue":  queue,
+        }
         await run_pipeline(state)
         log.info("✅ Pipeline complete for material_id=%s", material_id)
 
@@ -129,7 +129,7 @@ async def run_pipeline_task(
         try:
             mat = db.query(StudyMaterial).filter(StudyMaterial.id == material_id).first()
             if mat:
-                mat.status = "error"
+                mat.status = "error"  # type: ignore
                 db.commit()
         except Exception:
             pass
@@ -162,8 +162,8 @@ async def list_materials(
             "status":        m.status,
             "chunk_count":   m.chunk_count,
             "concept_count": concept_count,
-            "created_at":    m.created_at.isoformat() if m.created_at else None,
-            "updated_at":    m.updated_at.isoformat() if m.updated_at else None,
+            "created_at":    m.created_at.isoformat() if m.created_at is not None else None,
+            "updated_at":    m.updated_at.isoformat() if m.updated_at is not None else None,
         })
 
     return {"success": True, "data": result, "error": None}
@@ -193,14 +193,14 @@ async def get_material(
             "chunk_count":  mat.chunk_count,
             "summary":      mat.summary,
             "connections":  mat.connections or [],
-            "created_at":   mat.created_at.isoformat() if mat.created_at else None,
+            "created_at":   mat.created_at.isoformat() if mat.created_at is not None else None,
             "concepts": [
                 {
                     "id":            c.id,
                     "name":          c.name,
                     "definition":    c.definition,
                     "mastery_score": c.mastery_score,
-                    "next_review":   c.next_review.isoformat() if c.next_review else None,
+                    "next_review":   c.next_review.isoformat() if c.next_review is not None else None,
                 }
                 for c in concepts
             ],
@@ -262,7 +262,7 @@ async def delete_material(
     # Delete from FAISS
     try:
         from tools.faiss_store import FAISSStore
-        store = FAISSStore(current_user.id)
+        store = FAISSStore(str(current_user.id))
         store.load()
         store.delete_by_material(material_id)
     except Exception:
@@ -270,9 +270,9 @@ async def delete_material(
 
     # Delete file from disk
     try:
-        upload_dir = os.path.join(UPLOAD_PATH, current_user.id)
+        upload_dir = os.path.join(UPLOAD_PATH, str(current_user.id))
         for fname in os.listdir(upload_dir):
-            if mat.filename in fname:
+            if str(mat.filename) in fname:
                 os.remove(os.path.join(upload_dir, fname))
                 break
     except Exception:

@@ -12,7 +12,7 @@ async def quiz_node(state: dict) -> dict:
     user_id          = state.get("user_id")
     db               = state.get("db")
 
-    if not concepts or not db:
+    if not concepts or not db or not user_id:
         state["questions"] = []
         return state
 

@@ -98,7 +98,6 @@ def require_auth() -> dict:
 
 def show_login_page():
     """Full-page premium login UI for StudyAI."""
-    st.set_page_config(page_title="StudyAI — Login", page_icon="📚", layout="wide")
     _inject_login_css()
 
     col_left, col_right = st.columns([1, 1], gap="large")

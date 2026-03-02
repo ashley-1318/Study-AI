@@ -41,8 +41,8 @@ async def oauth_callback(code: str, state: str, db: Session = Depends(get_db)):
     profile    = await fetch_google_profile(token_data["access_token"])
     user       = get_or_create_user(db, profile)
 
-    access_token  = create_access_token(user.id, user.email)
-    refresh_token = create_refresh_token(user.id)
+    access_token  = create_access_token(str(user.id), str(user.email))
+    refresh_token = create_refresh_token(str(user.id))
 
     redirect_url = (
         f"http://localhost:8501"
@@ -63,13 +63,13 @@ async def refresh_tokens(body: RefreshRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Not a refresh token")
 
     user_id = payload["sub"]
-    from database import User
+    from .database import User
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
-    new_access  = create_access_token(user.id, user.email)
-    new_refresh = create_refresh_token(user.id)
+    new_access  = create_access_token(str(user.id), str(user.email))
+    new_refresh = create_refresh_token(str(user.id))
 
     return {
         "success": True,

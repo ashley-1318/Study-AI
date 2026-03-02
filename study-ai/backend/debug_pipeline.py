@@ -34,7 +34,7 @@ async def main():
         file_path = getattr(mat, "file_path", None)
         if not file_path or not os.path.exists(file_path):
             import glob
-            upload_dir = os.path.join("./uploads", mat.user_id)
+            upload_dir = os.path.join("./uploads", str(mat.user_id))
             pattern = os.path.join(upload_dir, f"*_{mat.filename}")
             matches = glob.glob(pattern)
             if not matches:
@@ -52,17 +52,30 @@ async def main():
             log.info("file_path from DB: %s", file_path)
 
         # Reset chunk count so we can verify it changes
-        mat.chunk_count = 0
+        mat.chunk_count = 0  # type: ignore
         db.commit()
 
-        state = PipelineState(
-            file_path      = file_path,
-            filename       = mat.filename,
-            user_id        = mat.user_id,
-            material_id    = mat.id,
-            db             = db,
-            progress_queue = None,
-        )
+        state: PipelineState = {
+            "file_path": file_path,
+            "filename": str(mat.filename),
+            "user_id": str(mat.user_id),
+            "material_id": str(mat.id),
+            "db": db,
+            "progress_queue": None,
+            "chunks": [],
+            "metadata": {},
+            "concepts": [],
+            "embeddings": [],
+            "faiss_ids": [],
+            "related": [],
+            "connections": [],
+            "summary": {},
+            "questions": [],
+            "revision": {},
+            "analytics": {},
+            "error": None,
+            "pipeline_quiz_id": None,
+        }
 
         log.info("▶ Running pipeline…")
         result = await run_pipeline(state)

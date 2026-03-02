@@ -17,8 +17,9 @@ def _clear_session():
         st.session_state.pop(key, None)
 
 
-def api_get(endpoint: str, params: dict = None) -> dict | None:
+def api_get(endpoint: str, params: dict | None = None) -> dict | None:
     url = f"{BASE_URL}{endpoint}"
+    resp = None
     try:
         resp = requests.get(url, headers=_headers(), params=params, timeout=30)
         if resp.status_code == 401:
@@ -33,17 +34,17 @@ def api_get(endpoint: str, params: dict = None) -> dict | None:
     except requests.exceptions.HTTPError as e:
         detail = ""
         try:
-            detail = resp.json().get("detail", "")
+            detail = resp.json().get("detail", "") if resp else ""
         except Exception:
             pass
-        st.error(f"API error {resp.status_code}: {detail or str(e)}")
+        st.error(f"API error {resp.status_code if resp else 'unknown'}: {detail or str(e)}")
         return None
     except Exception as e:
         st.error(f"Unexpected error: {e}")
         return None
 
 
-def api_post(endpoint: str, json: dict = None, files: dict = None, data: dict = None) -> dict | None:
+def api_post(endpoint: str, json: dict | None = None, files: dict | None = None, data: dict | None = None) -> dict | None:
     url = f"{BASE_URL}{endpoint}"
     headers = _headers()
     if files:
@@ -51,6 +52,7 @@ def api_post(endpoint: str, json: dict = None, files: dict = None, data: dict = 
         pass
     else:
         headers["Content-Type"] = "application/json"
+    resp = None
     try:
         resp = requests.post(url, headers=headers, json=json, files=files, data=data, timeout=30)
         if resp.status_code == 401:
@@ -64,10 +66,10 @@ def api_post(endpoint: str, json: dict = None, files: dict = None, data: dict = 
     except requests.exceptions.HTTPError as e:
         detail = ""
         try:
-            detail = resp.json().get("detail", "")
+            detail = resp.json().get("detail", "") if resp else ""
         except Exception:
             pass
-        st.error(f"API error {resp.status_code}: {detail or str(e)}")
+        st.error(f"API error {resp.status_code if resp else 'unknown'}: {detail or str(e)}")
         return None
     except Exception as e:
         st.error(f"Unexpected error: {e}")

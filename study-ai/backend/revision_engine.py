@@ -13,7 +13,7 @@ async def generate_adaptive_plan(
     db: Session,
     user_id: str,
     strategy: str = "balanced",
-    focus_material_ids: list = None,
+    focus_material_ids: list | None = None,
     days_available: int = 7
 ):
     """
@@ -37,13 +37,13 @@ async def generate_adaptive_plan(
     
     all_concepts = query.all()
     # Prioritize: weak ones (threshold) + those due soon
-    weak = [c for c in all_concepts if c.mastery_score < threshold or (c.next_review and c.next_review <= datetime.utcnow() + timedelta(days=days_available))]
+    weak = [c for c in all_concepts if c.mastery_score < threshold or (c.next_review is not None and c.next_review <= datetime.utcnow() + timedelta(days=days_available))]  # type: ignore
     
     if not weak:
         return {}
 
     # Sort by urgency (mastery DESC, next_review ASC)
-    weak.sort(key=lambda c: (c.mastery_score, c.next_review if c.next_review else datetime.utcnow()))
+    weak.sort(key=lambda c: (c.mastery_score, c.next_review if c.next_review is not None else datetime.utcnow()))
 
     # 3. RAG & Links (Intelligent Meta)
     store = FAISSStore(user_id)
@@ -58,7 +58,7 @@ async def generate_adaptive_plan(
     for concept in weak[:50]: # Cap at 50 for performance
         suggested = []
         try:
-            emb = generate_embedding(concept.name)
+            emb = generate_embedding(str(concept.name))
             results = store.search(query_embedding=emb, top_k=2)
             suggested = [r.get("chunk_text", "") for r in results if r.get("material_id") == concept.material_id]
             if not suggested: suggested = [r.get("chunk_text", "") for r in results[:2]]
@@ -67,7 +67,8 @@ async def generate_adaptive_plan(
 
         linked = []
         for w_id, w_name in weak_names.items():
-            if w_id != concept.id and w_name.lower() in (concept.definition or "").lower():
+            definition = concept.definition if concept.definition is not None else ""
+            if w_id != concept.id and w_name.lower() in definition.lower():  # type: ignore
                 linked.append(w_name)
 
         mat = db.query(StudyMaterial).filter(StudyMaterial.id == concept.material_id).first()
@@ -81,7 +82,7 @@ async def generate_adaptive_plan(
 
         schedule[concept.id] = {
             "name":             concept.name,
-            "next_review":      concept.next_review.isoformat() if concept.next_review else datetime.utcnow().isoformat(),
+            "next_review":      concept.next_review.isoformat() if concept.next_review is not None else datetime.utcnow().isoformat(),
             "mastery":          concept.mastery_score,
             "interval_days":    concept.interval_days,
             "filename":         mat.filename if mat else "Unknown",
@@ -93,17 +94,20 @@ async def generate_adaptive_plan(
 
     # 4. Persistence
     plan = db.query(RevisionPlan).filter(RevisionPlan.user_id == user_id).first()
+    mastery_avg = sum(float(c.mastery_score) for c in weak) / max(len(weak), 1)  # type: ignore
+    priority = round(1.0 - mastery_avg, 2)
+    
     if plan:
-        plan.concept_ids    = [c.id for c in weak]
-        plan.schedule       = schedule
-        plan.priority_score = round(1.0 - (sum(c.mastery_score for c in weak) / max(len(weak), 1)), 2)
-        plan.updated_at     = datetime.utcnow()
+        plan.concept_ids    = [c.id for c in weak]  # type: ignore
+        plan.schedule       = schedule  # type: ignore
+        plan.priority_score = priority  # type: ignore
+        plan.updated_at     = datetime.utcnow()  # type: ignore
     else:
         plan = RevisionPlan(
             user_id        = user_id,
             concept_ids    = [c.id for c in weak],
             schedule       = schedule,
-            priority_score = round(1.0 - (sum(c.mastery_score for c in weak) / max(len(weak), 1)), 2),
+            priority_score = priority,
         )
         db.add(plan)
     

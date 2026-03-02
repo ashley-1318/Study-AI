@@ -142,12 +142,12 @@ def get_or_create_user(db: Session, profile: dict) -> User:
 
     user = db.query(User).filter(User.google_id == google_id).first()
     if user:
-        user.last_login = datetime.utcnow()
-        user.name       = name
-        user.avatar_url = avatar
+        user.last_login = datetime.utcnow()  # type: ignore
+        user.name       = name  # type: ignore
+        user.avatar_url = avatar  # type: ignore
     else:
         user = User(google_id=google_id, email=email, name=name, avatar_url=avatar)
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.utcnow()  # type: ignore
         db.add(user)
 
     db.commit()

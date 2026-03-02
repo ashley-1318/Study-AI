@@ -18,7 +18,7 @@ async def analytics_overview(
     db: Session = Depends(get_db),
 ):
     """Aggregate stats: materials, concepts, quizzes, avg score, mastery, streak."""
-    data = get_analytics_overview(db, current_user.id)
+    data = get_analytics_overview(db, str(current_user.id))
     return {"success": True, "data": data, "error": None}
 
 
@@ -46,19 +46,20 @@ async def knowledge_gaps(
     # Group by material
     material_map: dict[str, dict] = {}
     for c in weak_concepts:
-        if c.material_id not in material_map:
+        mat_id = str(c.material_id)
+        if mat_id not in material_map:
             mat = db.query(StudyMaterial).filter(StudyMaterial.id == c.material_id).first()
-            material_map[c.material_id] = {
-                "material_id":   c.material_id,
+            material_map[mat_id] = {
+                "material_id":   mat_id,
                 "material_name": mat.filename if mat else "Unknown",
                 "concepts":      [],
             }
-        material_map[c.material_id]["concepts"].append({
+        material_map[mat_id]["concepts"].append({
             "id":            c.id,
             "name":          c.name,
             "mastery_score": c.mastery_score,
-            "action":        action(c.mastery_score),
-            "next_review":   c.next_review.isoformat() if c.next_review else None,
+            "action":        action(float(c.mastery_score)),  # type: ignore
+            "next_review":   c.next_review.isoformat() if c.next_review is not None else None,
         })
 
     return {"success": True, "data": list(material_map.values()), "error": None}
@@ -123,7 +124,7 @@ async def concept_coverage(
         if not concepts:
             continue
             
-        avg_mastery = sum(c.mastery_score for c in concepts) / len(concepts)
+        avg_mastery = sum(float(c.mastery_score) for c in concepts) / len(concepts)  # type: ignore
         per_material.append({
             "id": m.id,
             "filename": m.filename,

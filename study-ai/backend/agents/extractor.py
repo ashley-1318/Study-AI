@@ -1,4 +1,5 @@
 """StudyAI — Concept extractor agent node using Groq LLM."""
+import asyncio
 import json
 import logging
 import os
@@ -6,17 +7,22 @@ import re
 from datetime import datetime
 
 from dotenv import load_dotenv
+from groq import RateLimitError
 from langchain_groq import ChatGroq
 
 load_dotenv()
 
 log = logging.getLogger(__name__)
 
-_llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    temperature=0.3,
-    groq_api_key=os.getenv("GROQ_API_KEY", ""),
-)
+
+def _get_llm():
+    """Lazy initialize LLM to avoid errors if API key is missing."""
+    return ChatGroq(
+        model="llama-3.3-70b-versatile",
+        temperature=0.3,
+        api_key=os.getenv("GROQ_API_KEY", ""),  # type: ignore
+        stop_sequences=[],
+    )
 
 
 def _sanitize_json(raw: str) -> str:
@@ -71,6 +77,7 @@ async def extract_node(state: dict) -> dict:
 
     all_concepts: dict[str, dict] = {}  # name → dict
 
+    _llm = _get_llm()
     for chunk in chunks[:20]:  # limit to first 20 chunks
         prompt = f"""You are an AI tutor extracting key concepts from study material for StudyAI.
 
@@ -88,9 +95,31 @@ Extract 3-7 important concepts. Return ONLY a valid JSON array:
   }}
 ]"""
 
+        # Retry logic for rate limit errors
+        max_retries = 5
+        response = None  # Initialize to avoid unbound variable
+        for attempt in range(max_retries):
+            try:
+                response = await _llm.ainvoke(prompt)
+                break  # Success, exit retry loop
+            except RateLimitError as e:
+                if attempt == max_retries - 1:
+                    log.error(f"Chunk extraction failed after {max_retries} retries: {e}")
+                    raise
+                wait_time = 2 ** attempt  # 1s, 2s, 4s, 8s, 16s
+                log.warning(f"⚠️  Rate limit hit, waiting {wait_time}s before retry {attempt + 1}/{max_retries}...")
+                await asyncio.sleep(wait_time)
+                continue
+        
+        if response is None:
+            continue
+        
         try:
-            response = await _llm.ainvoke(prompt)
-            raw = response.content.strip()
+            # Handle response content which can be a list or dict
+            if isinstance(response.content, list):
+                raw = str(response.content[0]) if response.content else ""
+            else:
+                raw = str(response.content).strip()
             items = _extract_json_array(raw)
             if not items:
                 log.warning("No JSON array found in LLM response for chunk %d", chunks.index(chunk))
@@ -110,7 +139,7 @@ Extract 3-7 important concepts. Return ONLY a valid JSON array:
 
     # Persist to database
     saved_concepts = []
-    from database import Concept
+    from ..database import Concept
     for data in all_concepts.values():
         concept = Concept(
             material_id      = material_id,
