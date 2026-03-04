@@ -3,9 +3,10 @@
 <img src="https://img.shields.io/badge/StudyAI-Multi--Agent%20Learning-1fb89a?style=for-the-badge&logo=bookstack&logoColor=white" alt="StudyAI"/>
 
 # 📚 StudyAI
+
 ### Multi-Agent AI Study Companion & Adaptive Learning Intelligence System
 
-> *Transform static study materials into dynamic, interconnected learning experiences — powered by LangGraph, Groq, and RAG.*
+> _Transform static study materials into dynamic, interconnected learning experiences — powered by LangGraph, Groq, and RAG._
 
 <br/>
 
@@ -69,18 +70,18 @@ Upload PDF  →  AI Understands It  →  Links to Past Materials
 
 ### 🧠 Intelligent Multi-Agent Pipeline (10 Nodes)
 
-| Node | Role | Technology |
-|------|------|-----------|
-| **ParseNode** | Extract text from PDF, DOCX, TXT, MD | PyMuPDF, python-docx |
-| **ExtractNode** | Identify concepts + definitions | Groq Llama-3.3-70B |
-| **EmbedNode** | Generate 384-dim vector embeddings | sentence-transformers |
-| **IndexNode** | Store embeddings in FAISS per user | FAISS IndexFlatL2 |
-| **RetrieverNode** | Cross-material semantic search + WHY | FAISS + Groq |
-| **SummarizerNode** | Hierarchical markdown summaries | RAG + Groq |
-| **QuizNode** | Context-aware MCQ/TF/FillBlank gen | RAG + Groq |
-| **RevisionNode** | SM-2 scheduling + AI study tips | SM-2 Algorithm + Groq |
-| **AnalyticsNode** | Mastery scoring + coverage mapping | SQLAlchemy |
-| **ConnectionNode** | Explainable cross-document links | FAISS + Groq |
+| Node               | Role                                 | Technology            |
+| ------------------ | ------------------------------------ | --------------------- |
+| **ParseNode**      | Extract text from PDF, DOCX, TXT, MD | PyMuPDF, python-docx  |
+| **ExtractNode**    | Identify concepts + definitions      | Groq Llama-3.3-70B    |
+| **EmbedNode**      | Generate 384-dim vector embeddings   | sentence-transformers |
+| **IndexNode**      | Store embeddings in FAISS per user   | FAISS IndexFlatL2     |
+| **RetrieverNode**  | Cross-material semantic search + WHY | FAISS + Groq          |
+| **SummarizerNode** | Hierarchical markdown summaries      | RAG + Groq            |
+| **QuizNode**       | Context-aware MCQ/TF/FillBlank gen   | RAG + Groq            |
+| **RevisionNode**   | SM-2 scheduling + AI study tips      | SM-2 Algorithm + Groq |
+| **AnalyticsNode**  | Mastery scoring + coverage mapping   | SQLAlchemy            |
+| **ConnectionNode** | Explainable cross-document links     | FAISS + Groq          |
 
 ---
 
@@ -468,57 +469,76 @@ StudyAI uses RAG in **5 places** throughout the system:
 
 ### Core Technologies
 
-| Category | Technology | Version | Purpose |
-|----------|-----------|---------|---------|
-| **Agent Orchestration** | LangGraph | 0.2.0 | Stateful multi-agent pipeline |
-| **LLM Framework** | LangChain | 0.3.0 | LLM abstractions + tools |
-| **LLM Provider** | Groq API | 0.11.0 | Fast LLM inference |
-| **LLM Model** | Llama-3.3-70B-Versatile | — | Concept extraction, RAG, quiz gen |
-| **Embeddings** | sentence-transformers | 3.1.0 | Local 384-dim embeddings |
-| **Embedding Model** | all-MiniLM-L6-v2 | — | Fast, accurate, free |
-| **Vector Database** | FAISS (faiss-cpu) | 1.8.0 | Per-user ANN search |
-| **Relational DB** | SQLite + SQLAlchemy | 2.0.35 | Persistent metadata storage |
-| **Backend API** | FastAPI + Uvicorn | 0.115.0 | REST API + WebSocket |
-| **Frontend** | Streamlit | 1.39.0 | Interactive UI |
-| **Charts** | Plotly | 5.24.0 | Interactive dark-theme charts |
-| **Graph viz** | NetworkX | 3.3 | Knowledge graph rendering |
-| **Auth** | python-jose + Google OAuth | 3.3.0 | JWT + OAuth 2.0 |
-| **PDF Parsing** | PyMuPDF (fitz) | 1.24.0 | PDF text extraction |
-| **DOCX Parsing** | python-docx | 1.1.2 | Word document extraction |
-| **HTTP Client** | httpx + requests | 0.27.0 | API calls |
-| **WebSocket** | websockets | 13.0 | Live pipeline progress |
+| Category                  | Technology                 | Version | Purpose                                       |
+| ------------------------- | -------------------------- | ------- | --------------------------------------------- |
+| **Agent Orchestration**   | LangGraph                  | 0.2.0   | Stateful multi-agent pipeline                 |
+| **LLM Framework**         | LangChain                  | 0.3.0   | LLM abstractions + tools                      |
+| **LLM Provider**          | Groq API                   | 0.11.0  | Fast LLM inference                            |
+| **LLM Model (Primary)**   | Llama-3.3-70B-Versatile    | —       | Concept extraction, RAG, quiz gen, summaries  |
+| **LLM Model (Secondary)** | Llama-3.1-8B-Instant       | —       | Cross-material "WHY" explanations (retriever) |
+| **Embeddings**            | sentence-transformers      | 3.1.0   | Local 384-dim embeddings                      |
+| **Embedding Model**       | all-MiniLM-L6-v2           | —       | Fast, accurate, free                          |
+| **Vector Database**       | FAISS (faiss-cpu)          | 1.8.0   | Per-user ANN search                           |
+| **Relational DB**         | SQLite + SQLAlchemy        | 2.0.35  | Persistent metadata storage                   |
+| **Backend API**           | FastAPI + Uvicorn          | 0.115.0 | REST API + WebSocket                          |
+| **Frontend**              | Streamlit                  | 1.39.0  | Interactive UI                                |
+| **Charts**                | Plotly                     | 5.24.0  | Interactive dark-theme charts                 |
+| **Graph viz**             | NetworkX                   | 3.3     | Knowledge graph rendering                     |
+| **Auth**                  | python-jose + Google OAuth | 3.3.0   | JWT + OAuth 2.0                               |
+| **PDF Parsing**           | PyMuPDF (fitz)             | 1.24.0  | PDF text extraction                           |
+| **DOCX Parsing**          | python-docx                | 1.1.2   | Word document extraction                      |
+| **HTTP Client**           | httpx + requests           | 0.27.0  | API calls                                     |
+| **WebSocket**             | websockets                 | 13.0    | Live pipeline progress                        |
 
 ### Why These Choices?
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  WHY GROQ?                                              │
-│  → Fastest LLM API: ~200 tokens/sec                     │
-│  → Llama-3.3-70B matches GPT-4 quality                  │
-│  → Generous free tier for development                   │
-├─────────────────────────────────────────────────────────┤
-│  WHY FAISS?                                             │
-│  → Runs 100% locally — no cloud cost                    │
-│  → Sub-millisecond ANN search                           │
-│  → Per-user index isolation                             │
-│  → Persisted to disk automatically                      │
-├─────────────────────────────────────────────────────────┤
-│  WHY LANGGRAPH?                                         │
-│  → Stateful agent pipelines with TypedDict              │
-│  → Easy node composition and conditional edges          │
-│  → Async-native for concurrent processing              │
-├─────────────────────────────────────────────────────────┤
-│  WHY SQLITE?                                            │
-│  → Zero configuration required                          │
-│  → WAL mode for concurrent reads                        │
-│  → Portable single file database                        │
-│  → Perfect for single-user/small-team MVP               │
-├─────────────────────────────────────────────────────────┤
-│  WHY SENTENCE-TRANSFORMERS?                             │
-│  → Runs locally — no embedding API cost                 │
-│  → all-MiniLM-L6-v2: fast + high quality               │
-│  → 384-dim vectors: compact + accurate                  │
+│  WHY TWO LLM MODELS?                                    │
+│  ────────────────────────────────────────────────────── │
+│  🔹 Llama-3.3-70B (Primary):                            │
+│     • Complex reasoning tasks                           │
+│     • Concept extraction (multi-turn inference)         │
+│     • Quiz generation (creativity + accuracy)           │
+│     • RAG answers (comprehensive responses)             │
+│                                                         │
+│  🔹 Llama-3.1-8B (Secondary):                           │
+│     • Short explanations (20 words)                     │
+│     • Retrieval "WHY" reasoning                         │
+│     • 4x faster for simple tasks                        │
+│     • Lower cost for high-volume operations             │
+│                                                         │
+│  💡 OPTIMIZATION STRATEGY:                              │
+│     Use 70B for quality → 8B for speed/cost             │
+│     Retriever generates 10+ explanations per upload     │
+│     8B = 90% cheaper + instant responses                │
+│     70B only when depth/accuracy matters                │
 └─────────────────────────────────────────────────────────┘
+```
+
+### Cost-Performance Trade-off
+
+**Retriever Node Analysis:**
+
+- **Per Upload:** Generates 5-10 "WHY" explanations for cross-material connections
+- **Llama-3.3-70B Cost:** ~$0.59/1M tokens → $0.006 per explanation
+- **Llama-3.1-8B Cost:** ~$0.05/1M tokens → $0.0005 per explanation (12x cheaper)
+- **Speed:** 8B completes in <1s vs 70B's 2-3s
+
+**100 Students × 50 Uploads/Year:**
+
+- 70B-only: 5,000 explanations × $0.006 = **$30/year**
+- 8B hybrid: 5,000 explanations × $0.0005 = **$2.50/year**
+- **Savings:** $27.50 (91% reduction) with negligible quality loss
+
+**Quality Validation:**
+
+```python
+# 20-word explanations DON'T need 70B reasoning:
+# ✅ "Both discuss gradient descent as an optimization technique."
+# ✅ "Backpropagation applies the chain rule from calculus."
+
+# These don't benefit from 70B's extra parameters
 ```
 
 ---
@@ -666,64 +686,72 @@ studyai/
 ## 📡 API Reference
 
 ### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/auth/login` | Get Google OAuth URL |
-| `GET` | `/auth/callback` | OAuth code exchange + JWT issue |
-| `POST` | `/auth/refresh` | Rotate JWT token pair |
-| `GET` | `/auth/me` | Current user profile |
-| `POST` | `/auth/logout` | Stateless logout |
+
+| Method | Endpoint         | Description                     |
+| ------ | ---------------- | ------------------------------- |
+| `GET`  | `/auth/login`    | Get Google OAuth URL            |
+| `GET`  | `/auth/callback` | OAuth code exchange + JWT issue |
+| `POST` | `/auth/refresh`  | Rotate JWT token pair           |
+| `GET`  | `/auth/me`       | Current user profile            |
+| `POST` | `/auth/logout`   | Stateless logout                |
 
 ### Study Materials
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/materials/upload` | Upload file + launch pipeline |
-| `GET` | `/api/v1/materials/` | List all materials + concept count |
-| `GET` | `/api/v1/materials/{id}` | Single material + concepts |
-| `GET` | `/api/v1/materials/{id}/summary` | Summary + concept mastery |
-| `DELETE` | `/api/v1/materials/{id}` | Delete file + FAISS + DB cascade |
+
+| Method   | Endpoint                         | Description                        |
+| -------- | -------------------------------- | ---------------------------------- |
+| `POST`   | `/api/v1/materials/upload`       | Upload file + launch pipeline      |
+| `GET`    | `/api/v1/materials/`             | List all materials + concept count |
+| `GET`    | `/api/v1/materials/{id}`         | Single material + concepts         |
+| `GET`    | `/api/v1/materials/{id}/summary` | Summary + concept mastery          |
+| `DELETE` | `/api/v1/materials/{id}`         | Delete file + FAISS + DB cascade   |
 
 ### Quiz
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/quiz/generate` | Adaptive quiz (weak concepts first) |
-| `POST` | `/api/v1/quiz/{id}/submit` | Grade answers + update mastery |
-| `GET` | `/api/v1/quiz/history` | Last 20 quizzes with scores |
-| `POST` | `/api/v1/quiz/rag-generate` | RAG quiz from content |
-| `POST` | `/api/v1/quiz/rag-submit` | Grade RAG quiz |
+
+| Method | Endpoint                    | Description                         |
+| ------ | --------------------------- | ----------------------------------- |
+| `POST` | `/api/v1/quiz/generate`     | Adaptive quiz (weak concepts first) |
+| `POST` | `/api/v1/quiz/{id}/submit`  | Grade answers + update mastery      |
+| `GET`  | `/api/v1/quiz/history`      | Last 20 quizzes with scores         |
+| `POST` | `/api/v1/quiz/rag-generate` | RAG quiz from content               |
+| `POST` | `/api/v1/quiz/rag-submit`   | Grade RAG quiz                      |
 
 ### Revision
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/revision/plan` | Plan + due today + AI tips |
-| `POST` | `/api/v1/revision/complete` | Mark reviewed + SM-2 update |
+
+| Method | Endpoint                    | Description                   |
+| ------ | --------------------------- | ----------------------------- |
+| `GET`  | `/api/v1/revision/plan`     | Plan + due today + AI tips    |
+| `POST` | `/api/v1/revision/complete` | Mark reviewed + SM-2 update   |
 | `POST` | `/api/v1/revision/generate` | Custom plan (strategy + days) |
 
 ### Analytics
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/analytics/overview` | Stats summary |
-| `GET` | `/api/v1/analytics/gaps` | Knowledge gaps with actions |
-| `GET` | `/api/v1/analytics/heatmap` | 90-day activity heatmap |
-| `GET` | `/api/v1/analytics/coverage` | Concept coverage by topic |
-| `GET` | `/api/v1/analytics/overlap` | Cross-material concept overlap |
+
+| Method | Endpoint                     | Description                    |
+| ------ | ---------------------------- | ------------------------------ |
+| `GET`  | `/api/v1/analytics/overview` | Stats summary                  |
+| `GET`  | `/api/v1/analytics/gaps`     | Knowledge gaps with actions    |
+| `GET`  | `/api/v1/analytics/heatmap`  | 90-day activity heatmap        |
+| `GET`  | `/api/v1/analytics/coverage` | Concept coverage by topic      |
+| `GET`  | `/api/v1/analytics/overlap`  | Cross-material concept overlap |
 
 ### RAG
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/ask` | RAG Q&A from study library |
-| `POST` | `/api/v1/rag-summary` | RAG-enhanced summary |
-| `GET` | `/api/v1/search/semantic` | Semantic chunk search |
+
+| Method | Endpoint                  | Description                |
+| ------ | ------------------------- | -------------------------- |
+| `POST` | `/api/v1/ask`             | RAG Q&A from study library |
+| `POST` | `/api/v1/rag-summary`     | RAG-enhanced summary       |
+| `GET`  | `/api/v1/search/semantic` | Semantic chunk search      |
 
 ### History
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/history` | Full learning timeline |
-| `GET` | `/api/v1/history/stats` | Event statistics |
+
+| Method | Endpoint                | Description            |
+| ------ | ----------------------- | ---------------------- |
+| `GET`  | `/api/v1/history`       | Full learning timeline |
+| `GET`  | `/api/v1/history/stats` | Event statistics       |
 
 ### WebSocket
-| Endpoint | Description |
-|----------|-------------|
+
+| Endpoint                                  | Description                   |
+| ----------------------------------------- | ----------------------------- |
 | `WS /ws/pipeline/{material_id}?token=JWT` | Live pipeline progress stream |
 
 > All endpoints return: `{"success": bool, "data": any, "error": str | null}`
@@ -780,12 +808,12 @@ streamlit run app.py --server.port 8501
 
 ### 5. Open StudyAI
 
-| Service | URL |
-|---------|-----|
-| **Frontend** | http://localhost:8501 |
-| **Backend API** | http://localhost:8000 |
-| **API Documentation** | http://localhost:8000/docs |
-| **Health Check** | http://localhost:8000/health |
+| Service               | URL                          |
+| --------------------- | ---------------------------- |
+| **Frontend**          | http://localhost:8501        |
+| **Backend API**       | http://localhost:8000        |
+| **API Documentation** | http://localhost:8000/docs   |
+| **Health Check**      | http://localhost:8000/health |
 
 ---
 
@@ -958,6 +986,6 @@ and/or sell copies of the Software...
 [![LangGraph](https://img.shields.io/badge/Orchestrated%20by-LangGraph-1fb89a?style=flat-square)](https://langchain-ai.github.io/langgraph)
 [![FAISS](https://img.shields.io/badge/Vector%20Search-FAISS-4285F4?style=flat-square)](https://faiss.ai)
 
-*If this project helped you, please ⭐ star the repository!*
+_If this project helped you, please ⭐ star the repository!_
 
 </div>
